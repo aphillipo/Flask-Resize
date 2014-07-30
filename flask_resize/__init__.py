@@ -188,6 +188,8 @@ def resize(image_path, dimensions, format=None, quality=80, fill=False,
         _, _, filename = image_path.rpartition('/')
         placeholder_reason = None
     elif not placeholder_reason:
+        raise TypeError(u'No such file {}'.format(original_path))
+
         placeholder_reason = u'{} does not exist'.format(image_path)
         image_path = filename = get_placeholder_filename(placeholder_reason)
     elif placeholder and placeholder_reason:
@@ -225,6 +227,20 @@ def resize(image_path, dimensions, format=None, quality=80, fill=False,
     return full_cache_url
 
 
+def resize_or_cat(image_path, dimensions, format=None, quality=80, fill=False,
+           upscale=True, progressive=True, anchor='center', placeholder=False):
+    """
+    Returns a cat picture if there is an error.
+    """
+    try:
+        return resize(image_path, dimensions, format, quality, fill,
+           upscale, progressive, anchor, False)
+    except:
+        w,h = parse_dimensions(dimensions)
+
+        return u'http://placekitten.com/%d/%d' % (w,h)
+
+
 class Resize(object):
     """Adds a jinja filter for resizing images to the Flask template env"""
 
@@ -252,6 +268,7 @@ class Resize(object):
         app.config.setdefault('RESIZE_HASH_METHOD', 'md5')
 
         app.jinja_env.filters['resize'] = resize
+        app.jinja_env.filters['resize_or_cat'] = resize_or_cat
 
     def teardown(self, exception):
         pass
