@@ -227,7 +227,7 @@ def resize(image_path, dimensions, format=None, quality=80, fill=False,
     return full_cache_url
 
 
-def resize_or_cat(image_path, dimensions, format=None, quality=80, fill=False,
+def resize_or_blank(image_path, dimensions, format=None, quality=80, fill=False,
            upscale=True, progressive=True, anchor='center', placeholder=False):
     """
     Returns a cat picture if there is an error.
@@ -235,10 +235,10 @@ def resize_or_cat(image_path, dimensions, format=None, quality=80, fill=False,
     try:
         return resize(image_path, dimensions, format, quality, fill,
            upscale, progressive, anchor, False)
-    except:
+    except TypeError, ValueError:
         w,h = parse_dimensions(dimensions)
 
-        return u'http://placekitten.com/%d/%d' % (w,h)
+        return u'/static/images/blank.png'
 
 
 class Resize(object):
@@ -267,8 +267,8 @@ class Resize(object):
         app.config.setdefault('RESIZE_HASH_FILENAME', True)
         app.config.setdefault('RESIZE_HASH_METHOD', 'md5')
 
-        app.jinja_env.filters['resize'] = resize
-        app.jinja_env.filters['resize_or_cat'] = resize_or_cat
+        app.jinja_env.filters['resize'] = resize_or_blank
+        app.jinja_env.filters['resize_or_cat'] = resize_or_blank
 
     def teardown(self, exception):
         pass
